@@ -14,16 +14,18 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-type ScheduleCell struct {
-	From        string  `json:"from"`
-	To          string  `json:"to"`
-	Temperature float64 `json:"temperature"`
-}
-
 type Schedule struct {
-	Workday            []ScheduleCell `json:"workday"`
-	Freeday            []ScheduleCell `json:"freeday"`
-	DefaultTemperature float64        `json:"defaultTemperature"`
+	Workday []struct {
+		From        string  `json:"from"`
+		To          string  `json:"to"`
+		Temperature float64 `json:"temperature"`
+	} `json:"workday"`
+	Freeday []struct {
+		From        string  `json:"from"`
+		To          string  `json:"to"`
+		Temperature float64 `json:"temperature"`
+	} `json:"freeday"`
+	DefaultTemperature float64 `json:"defaultTemperature"`
 }
 
 type BoolPoint struct {
@@ -78,6 +80,7 @@ func onMessage(client mqtt.Client, message mqtt.Message) {
 			log.Printf("Received incorrect message payload: '%v'\n", message.Payload())
 			return
 		}
+		log.Printf("New schedule received: %+v", tmp)
 		schedule = tmp
 	}
 }
@@ -110,10 +113,13 @@ func init() {
 
 func main() {
 	broker := flag.String("broker", "tcp://127.0.0.1:1883", "The full url of the MQTT server to connect to ex: tcp://127.0.0.1:1883")
-	clientID := flag.String("clientid", "heater", "A clientid for the connection")
+	clientID := flag.String("clientid", "roomtemp", "A clientid for the connection")
 	flag.Parse()
 
 	brokerURL, _ := url.Parse(*broker)
+
+	log.Printf("%s\n", sensors.holiday.addr)
+
 	var topics []string
 	topics = append(topics, sensors.holiday.addr, sensors.override.addr, scheduleTopic)
 	client = mqttclient.New(*clientID, brokerURL, topics, onMessage)
@@ -121,7 +127,7 @@ func main() {
 
 	// Wait for sensors data
 	for {
-		if schedule.DefaultTemperature == 0 {
+		if schedule.DefaultTemperature != 0 {
 			break
 		}
 		log.Println("Waiting 15s for schedule data...")
@@ -130,7 +136,6 @@ func main() {
 	log.Printf("Starting with schedule received: %+v\n", schedule)
 
 	// run program
-	var cells []ScheduleCell
 	for {
 		time.Sleep(1 * time.Second)
 
@@ -141,19 +146,21 @@ func main() {
 		}
 
 		// check if now is the time to start heating
+		cells := &schedule.Workday
 		if sensors.holiday.v {
-			cells = schedule.Freeday
-		} else {
-			cells = schedule.Workday
+			cells = &schedule.Freeday
 		}
-		for _, cell := range cells {
+
+		temp := schedule.DefaultTemperature
+		for _, cell := range *cells {
 			from := stringToDate(cell.From)
 			to := stringToDate(cell.To)
 			if time.Now().After(from) && time.Now().Before(to) {
-				setExpected(cell.Temperature)
+				temp = cell.Temperature
 				continue
 			}
 		}
-		setExpected(schedule.DefaultTemperature)
+
+		setExpected(temp)
 	}
 }
