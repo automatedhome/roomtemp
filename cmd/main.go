@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	mqttclient "github.com/automatedhome/flow-meter/pkg/mqttclient"
+	mqttclient "github.com/automatedhome/common/pkg/mqttclient"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
