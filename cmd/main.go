@@ -63,6 +63,10 @@ func onMessage(client mqtt.Client, message mqtt.Message) {
 			return
 		}
 		sensors.holiday.v = value
+		if value {
+			log.Println("We are in holiday mode!")
+		}
+		log.Println("Working days mode activated.")
 
 	case sensors.override.addr:
 		overrideEnd = time.Now().Add(time.Duration(60 * time.Minute))
@@ -71,6 +75,7 @@ func onMessage(client mqtt.Client, message mqtt.Message) {
 			log.Printf("Received incorrect message payload: '%v'\n", message.Payload())
 			return
 		}
+		log.Printf("Overriding expected temperature to: '%f'\n", value)
 		sensors.override.v = value
 
 	case scheduleTopic:
