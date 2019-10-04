@@ -86,9 +86,9 @@ func setExpected(value float64) {
 }
 
 func init() {
-	sensors.holiday = common.BoolPoint{false, "heater/settings/holiday"}
-	sensors.override = common.DataPoint{18, "heater/settings/override"}
-	actuators.expected = common.DataPoint{18, "heater/settings/expected"}
+	sensors.holiday = common.BoolPoint{Value: false, Address: "heater/settings/holiday"}
+	sensors.override = common.DataPoint{Value: 18, Address: "heater/settings/override"}
+	actuators.expected = common.DataPoint{Value: 18, Address: "heater/settings/expected"}
 	schedule.DefaultTemperature = 0
 	scheduleTopic = "heater/settings/schedule"
 
