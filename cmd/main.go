@@ -124,8 +124,6 @@ func main() {
 
 	brokerURL, _ := url.Parse(*broker)
 
-	log.Printf("%s\n", sensors.holiday.addr)
-
 	var topics []string
 	topics = append(topics, sensors.holiday.addr, sensors.override.addr, scheduleTopic)
 	client = mqttclient.New(*clientID, brokerURL, topics, onMessage)
