@@ -11,22 +11,9 @@ import (
 	"time"
 
 	mqttclient "github.com/automatedhome/common/pkg/mqttclient"
+	scheduler "github.com/automatedhome/scheduler/pkg/types"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
-
-type Schedule struct {
-	Workday []struct {
-		From        string  `json:"from"`
-		To          string  `json:"to"`
-		Temperature float64 `json:"temperature"`
-	} `json:"workday"`
-	Freeday []struct {
-		From        string  `json:"from"`
-		To          string  `json:"to"`
-		Temperature float64 `json:"temperature"`
-	} `json:"freeday"`
-	DefaultTemperature float64 `json:"defaultTemperature"`
-}
 
 type BoolPoint struct {
 	v    bool
@@ -49,7 +36,7 @@ type Actuators struct {
 
 var sensors Sensors
 var actuators Actuators
-var schedule Schedule
+var schedule scheduler.Schedule
 var overrideEnd time.Time
 var scheduleTopic string
 var client mqtt.Client
@@ -79,7 +66,7 @@ func onMessage(client mqtt.Client, message mqtt.Message) {
 		sensors.override.v = value
 
 	case scheduleTopic:
-		var tmp = Schedule{}
+		var tmp = scheduler.Schedule{}
 		err := json.Unmarshal(message.Payload(), &tmp)
 		if err != nil {
 			log.Printf("Received incorrect message payload: '%v'\n", message.Payload())
