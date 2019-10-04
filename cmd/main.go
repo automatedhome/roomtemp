@@ -11,27 +11,18 @@ import (
 	"time"
 
 	mqttclient "github.com/automatedhome/common/pkg/mqttclient"
+	common "github.com/automatedhome/common/pkg/types"
 	scheduler "github.com/automatedhome/scheduler/pkg/types"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
-type BoolPoint struct {
-	v    bool
-	addr string
-}
-
-type DataPoint struct {
-	v    float64
-	addr string
-}
-
 type Sensors struct {
-	holiday  BoolPoint
-	override DataPoint
+	holiday  common.BoolPoint
+	override common.DataPoint
 }
 
 type Actuators struct {
-	expected DataPoint
+	expected common.DataPoint
 }
 
 var sensors Sensors
@@ -43,19 +34,19 @@ var client mqtt.Client
 
 func onMessage(client mqtt.Client, message mqtt.Message) {
 	switch message.Topic() {
-	case sensors.holiday.addr:
+	case sensors.holiday.Address:
 		value, err := strconv.ParseBool(string(message.Payload()))
 		if err != nil {
 			log.Printf("Received incorrect message payload: '%v'\n", message.Payload())
 			return
 		}
-		sensors.holiday.v = value
+		sensors.holiday.Value = value
 		if value {
 			log.Println("We are in holiday mode!")
 		}
 		log.Println("Working days mode activated.")
 
-	case sensors.override.addr:
+	case sensors.override.Address:
 		overrideEnd = time.Now().Add(time.Duration(60 * time.Minute))
 		value, err := strconv.ParseFloat(string(message.Payload()), 64)
 		if err != nil {
@@ -63,7 +54,7 @@ func onMessage(client mqtt.Client, message mqtt.Message) {
 			return
 		}
 		log.Printf("Overriding expected temperature to: '%f'\n", value)
-		sensors.override.v = value
+		sensors.override.Value = value
 
 	case scheduleTopic:
 		var tmp = scheduler.Schedule{}
@@ -87,17 +78,17 @@ func stringToDate(str string) time.Time {
 
 func setExpected(value float64) {
 	// Value is retained and persists in broker db
-	if actuators.expected.v != value {
-		client.Publish(actuators.expected.addr, 0, true, fmt.Sprintf("%.2f", value))
-		actuators.expected.v = value
+	if actuators.expected.Value != value {
+		client.Publish(actuators.expected.Address, 0, true, fmt.Sprintf("%.2f", value))
+		actuators.expected.Value = value
 		log.Printf("Setting expected temperature to %.2f", value)
 	}
 }
 
 func init() {
-	sensors.holiday = BoolPoint{false, "heater/settings/holiday"}
-	sensors.override = DataPoint{18, "heater/settings/override"}
-	actuators.expected = DataPoint{18, "heater/settings/expected"}
+	sensors.holiday = common.BoolPoint{false, "heater/settings/holiday"}
+	sensors.override = common.DataPoint{18, "heater/settings/override"}
+	actuators.expected = common.DataPoint{18, "heater/settings/expected"}
 	schedule.DefaultTemperature = 0
 	scheduleTopic = "heater/settings/schedule"
 
@@ -109,10 +100,13 @@ func main() {
 	clientID := flag.String("clientid", "roomtemp", "A clientid for the connection")
 	flag.Parse()
 
-	brokerURL, _ := url.Parse(*broker)
+	brokerURL, err := url.Parse(*broker)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	var topics []string
-	topics = append(topics, sensors.holiday.addr, sensors.override.addr, scheduleTopic)
+	topics = append(topics, sensors.holiday.Address, sensors.override.Address, scheduleTopic)
 	client = mqttclient.New(*clientID, brokerURL, topics, onMessage)
 	log.Printf("Connected to %s as %s and waiting for messages\n", *broker, *clientID)
 
@@ -132,13 +126,13 @@ func main() {
 
 		// check if manual override heating mode is enabled
 		if time.Now().Before(overrideEnd) {
-			setExpected(sensors.override.v)
+			setExpected(sensors.override.Value)
 			continue
 		}
 
 		// check if now is the time to start heating
 		cells := &schedule.Workday
-		if sensors.holiday.v {
+		if sensors.holiday.Value {
 			cells = &schedule.Freeday
 		}
 

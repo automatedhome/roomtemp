@@ -1,5 +1,5 @@
-github.com/automatedhome/common v0.0.0-20190614135833-2728818c3f91 h1:4cTvlrLCKl3POKamWMkoV13EutDGpvukj5tG57th/co=
-github.com/automatedhome/common v0.0.0-20190614135833-2728818c3f91/go.mod h1:sxFrr3+aiXn8iAevbU/SEn3Ek366V5WQXEsd2ExBtuk=
+github.com/automatedhome/common v0.0.0-20191004194836-305c32535b63 h1:r7AAbQS7CEtV6xTHBrOA1oyfv1OlpRC5QJ/6JcBrPwo=
+github.com/automatedhome/common v0.0.0-20191004194836-305c32535b63/go.mod h1:sxFrr3+aiXn8iAevbU/SEn3Ek366V5WQXEsd2ExBtuk=
 github.com/automatedhome/scheduler v0.0.0-20191004215838-171b60f483e6 h1:AjWDjUOuGXZij/cmUSLYFg8u0v6U5eSlgSQlbTCC3J8=
 github.com/automatedhome/scheduler v0.0.0-20191004215838-171b60f483e6/go.mod h1:gtH813zP+OaQLNoNTpVoQLNhdyX2hmt4H/StSk7d9ug=
 github.com/eclipse/paho.mqtt.golang v1.2.0 h1:1F8mhG9+aO5/xpdtFkW4SxOJB67ukuDC3t2y2qayIX0=
