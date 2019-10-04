@@ -94,8 +94,9 @@ func stringToDate(str string) time.Time {
 }
 
 func setExpected(value float64) {
+	// Value is retained and persists in broker db
 	if actuators.expected.v != value {
-		client.Publish(actuators.expected.addr, 0, false, fmt.Sprintf("%.2f", value))
+		client.Publish(actuators.expected.addr, 0, true, fmt.Sprintf("%.2f", value))
 		actuators.expected.v = value
 		log.Printf("Setting expected temperature to %.2f", value)
 	}
