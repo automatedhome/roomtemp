@@ -134,12 +134,13 @@ func init() {
 	actuators = config.Actuators
 	settings = config.Settings
 	schedule.DefaultTemperature = 0
-	setMode("auto")
 
 	var topics []string
 	topics = append(topics, settings.Holiday.Address, settings.Override.Address, settings.Mode.Address, scheduleTopic)
 	client = mqttclient.New(*clientID, brokerURL, topics, onMessage)
 	log.Printf("Connected to %s as %s and waiting for messages\n", *broker, *clientID)
+
+	setMode("auto")
 
 	// Wait for settings data
 	for {
