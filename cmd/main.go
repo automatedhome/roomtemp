@@ -81,9 +81,9 @@ func setMode(val string) {
 
 	log.Printf("Setting operation mode to: '%s'\n", mode)
 	client.Publish(settings.Mode.Address, 0, false, mode)
-	if mode == "heat" {
-		overrideEnd = time.Now().Add(time.Duration(60 * time.Minute))
-	}
+	//if mode == "heat" {
+	//	overrideEnd = time.Now().Add(time.Duration(60 * time.Minute))
+	//}
 	if mode == "auto" {
 		overrideEnd = time.Now()
 	}
