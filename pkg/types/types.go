@@ -4,9 +4,13 @@ import (
 	common "github.com/automatedhome/common/pkg/types"
 )
 
-type Sensors struct {
+type Settings struct {
 	Holiday  common.BoolPoint `yaml:"holiday"`
 	Override common.DataPoint `yaml:"override"`
+	Mode     struct {
+		Value   string `yaml:"value,omitempty"`
+		Address string `yaml:"address"`
+	} `yaml:"mode"`
 }
 
 type Actuators struct {
@@ -15,6 +19,6 @@ type Actuators struct {
 
 type Config struct {
 	Actuators Actuators `yaml:"actuators"`
-	Sensors   Sensors   `yaml:"sensors"`
+	Settings  Settings  `yaml:"settings"`
 	Schedule  string    `yaml:"scheduleTopic"`
 }

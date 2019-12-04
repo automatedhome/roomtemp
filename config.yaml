@@ -1,13 +1,16 @@
 ---
-sensors:
+scheduleTopic: "thermostat/schedule"
+actuators:
+  expected:
+    address: "heater/expected"
+    value: 18
+settings:
   holiday:
     address: "thermostat/settings/holiday"
     value: false
   override:
     address: "thermostat/settings/override"
     value: 18
-actuators:
-  expected:
-    address: "heater/expected"
-    value: 18
-scheduleTopic: "thermostat/schedule"
+  mode:
+    address: "thermostat/settings/mode"
+    value: "auto"

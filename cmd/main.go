@@ -21,29 +21,30 @@ import (
 
 var (
 	config        types.Config
-	sensors       types.Sensors
+	settings      types.Settings
 	actuators     types.Actuators
 	schedule      scheduler.Schedule
 	overrideEnd   time.Time
+	mode          string
 	scheduleTopic string
 	client        mqtt.Client
 )
 
 func onMessage(client mqtt.Client, message mqtt.Message) {
 	switch message.Topic() {
-	case sensors.Holiday.Address:
+	case settings.Holiday.Address:
 		value, err := strconv.ParseBool(string(message.Payload()))
 		if err != nil {
 			log.Printf("Received incorrect message payload: '%v'\n", message.Payload())
 			return
 		}
-		sensors.Holiday.Value = value
+		settings.Holiday.Value = value
 		if value {
 			log.Println("We are in holiday mode!")
 		}
 		log.Println("Working days mode activated.")
 
-	case sensors.Override.Address:
+	case settings.Override.Address:
 		overrideEnd = time.Now().Add(time.Duration(60 * time.Minute))
 		value, err := strconv.ParseFloat(string(message.Payload()), 64)
 		if err != nil {
@@ -51,7 +52,11 @@ func onMessage(client mqtt.Client, message mqtt.Message) {
 			return
 		}
 		log.Printf("Overriding expected temperature to: '%f'\n", value)
-		sensors.Override.Value = value
+		settings.Override.Value = value
+
+	case settings.Mode.Address:
+		value := string(message.Payload())
+		setMode(value)
 
 	case scheduleTopic:
 		var tmp = scheduler.Schedule{}
@@ -62,6 +67,25 @@ func onMessage(client mqtt.Client, message mqtt.Message) {
 		}
 		log.Printf("New schedule received: %+v", tmp)
 		schedule = tmp
+	}
+}
+
+func setMode(val string) {
+	if val != "auto" && val != "heat" {
+		return
+	}
+	if val == mode {
+		return
+	}
+	mode = val
+
+	log.Printf("Setting operation mode to: '%s'\n", mode)
+	client.Publish(settings.Mode.Address, 0, false, mode)
+	if mode == "heat" {
+		overrideEnd = time.Now().Add(time.Duration(60 * time.Minute))
+	}
+	if mode == "auto" {
+		overrideEnd = time.Now()
 	}
 }
 
@@ -108,16 +132,16 @@ func init() {
 
 	scheduleTopic = config.Schedule
 	actuators = config.Actuators
-	sensors = config.Sensors
+	settings = config.Settings
 	schedule.DefaultTemperature = 0
-	overrideEnd = time.Now()
+	setMode("auto")
 
 	var topics []string
-	topics = append(topics, sensors.Holiday.Address, sensors.Override.Address, scheduleTopic)
+	topics = append(topics, settings.Holiday.Address, settings.Override.Address, settings.Mode.Address, scheduleTopic)
 	client = mqttclient.New(*clientID, brokerURL, topics, onMessage)
 	log.Printf("Connected to %s as %s and waiting for messages\n", *broker, *clientID)
 
-	// Wait for sensors data
+	// Wait for settings data
 	for {
 		if schedule.DefaultTemperature != 0 {
 			break
@@ -133,15 +157,21 @@ func main() {
 	for {
 		time.Sleep(1 * time.Second)
 
-		// check if manual override heating mode is enabled
 		if time.Now().Before(overrideEnd) {
-			setExpected(sensors.Override.Value)
+			setMode("heat")
+		} else {
+			setMode("auto")
+		}
+
+		// check if manual override heating mode is enabled
+		if mode == "heat" {
+			setExpected(settings.Override.Value)
 			continue
 		}
 
 		// check if now is the time to start heating
 		cells := &schedule.Workday
-		if sensors.Holiday.Value {
+		if settings.Holiday.Value {
 			cells = &schedule.Freeday
 		}
 
