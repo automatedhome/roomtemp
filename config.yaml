@@ -1,13 +1,13 @@
 ---
 sensors:
   holiday:
-    Address: "thermostat/settings/holiday"
-    Value: false
+    address: "thermostat/settings/holiday"
+    value: false
   override:
-    Address: "thermostat/settings/override"
-    Value: 18
+    address: "thermostat/settings/override"
+    value: 18
 actuators:
   expected:
-    Address: "heater/expected"
-    Value: 18
+    address: "heater/expected"
+    value: 18
 scheduleTopic: "thermostat/schedule"

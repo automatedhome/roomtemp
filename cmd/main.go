@@ -100,11 +100,11 @@ func init() {
 		return
 	}
 
-	log.Printf("Starting with following config: %+v", data)
-
 	if err := yaml.UnmarshalStrict(data, &config); err != nil {
 		log.Fatalf("error: %v", err)
 	}
+
+	log.Printf("Starting with following config: %+v", config)
 
 	scheduleTopic = config.Schedule
 	actuators = config.Actuators
