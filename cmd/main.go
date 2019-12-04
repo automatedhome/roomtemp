@@ -84,7 +84,7 @@ func setExpected(value float64) {
 
 func init() {
 	broker := flag.String("broker", "tcp://127.0.0.1:1883", "The full url of the MQTT server to connect to ex: tcp://127.0.0.1:1883")
-	clientID := flag.String("clientid", "heater", "A clientid for the connection")
+	clientID := flag.String("clientid", "thermostat", "A clientid for the connection")
 	configFile := flag.String("config", "/config.yaml", "Provide configuration file with MQTT topic mappings")
 	flag.Parse()
 
