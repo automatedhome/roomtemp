@@ -1,7 +1,7 @@
 GO111MODULE=on
 export GO111MODULE
 
-APP=roomtemp
+APP=thermostat
 IMAGE=automatedhome/$(APP)
 
 .PHONY: build

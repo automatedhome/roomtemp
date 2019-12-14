@@ -14,7 +14,7 @@ import (
 	"gopkg.in/yaml.v2"
 
 	mqttclient "github.com/automatedhome/common/pkg/mqttclient"
-	types "github.com/automatedhome/roomtemp/pkg/types"
+	types "github.com/automatedhome/thermostat/pkg/types"
 	scheduler "github.com/automatedhome/scheduler/pkg/types"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
@@ -45,6 +45,10 @@ func onMessage(client mqtt.Client, message mqtt.Message) {
 		log.Println("Working days mode activated.")
 
 	case settings.Override.Address:
+		// Ignore retained messages on this topic
+		if message.Retained() {
+			return
+		}
 		overrideEnd = time.Now().Add(time.Duration(60 * time.Minute))
 		value, err := strconv.ParseFloat(string(message.Payload()), 64)
 		if err != nil {

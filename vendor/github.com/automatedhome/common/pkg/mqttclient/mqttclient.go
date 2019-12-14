@@ -44,7 +44,7 @@ func New(id string, uri *url.URL, topics []string, callback mqtt.MessageHandler)
 	}
 	opts.OnConnect = func(c mqtt.Client) {
 		if token := c.SubscribeMultiple(topicsMap, callback); token.Wait() && token.Error() != nil {
-			panic(token.Error())
+			log.Fatal(token.Error())
 		}
 	}
 
