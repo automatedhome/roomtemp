@@ -41,8 +41,9 @@ func onMessage(client mqtt.Client, message mqtt.Message) {
 		settings.Holiday.Value = value
 		if value {
 			log.Println("We are in holiday mode!")
+		} else {
+			log.Println("Working days mode activated.")
 		}
-		log.Println("Working days mode activated.")
 
 	case settings.Override.Address:
 		// Ignore retained messages on this topic
